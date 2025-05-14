@@ -21,14 +21,41 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       text-align: center;
       max-width: 320px;
+      position: relative;
     }
     #cover {
       width: 100%;
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
+    /* Visualizer bars */
+    #visualizer {
+      display: none;
+      margin: 15px auto 0;
+      height: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+    }
+    #visualizer.playing {
+      display: flex;
+    }
+    .bar {
+      width: 6px;
+      background: #90a4ae;
+      animation: bounce 0.6s infinite ease-in-out;
+      animation-delay: var(--delay);
+      transform-origin: bottom;
+    }
+    .bar:nth-child(1) { --delay: 0s; }
+    .bar:nth-child(2) { --delay: 0.2s; }
+    .bar:nth-child(3) { --delay: 0.4s; }
+    @keyframes bounce {
+      0%, 100% { transform: scaleY(0.3); }
+      50% { transform: scaleY(1); }
+    }
     #controls {
-      margin-top: 15px;
+      margin-top: 20px;
       display: flex;
       justify-content: space-between;
     }
@@ -43,6 +70,10 @@
       cursor: pointer;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       background: #ffffff;
+      transition: transform 0.1s ease;
+    }
+    .icon-button:active {
+      transform: scale(0.9);
     }
     /* Couleurs spécifiques */
     #play { background: #8bc34a; }
@@ -56,6 +87,11 @@
   <div id="player">
     <img id="cover" src="" alt="Couverture du livre">
     <audio id="audio" src=""></audio>
+    <div id="visualizer">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </div>
     <div id="controls">
       <button id="prev" class="icon-button" title="Précédent">
         <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
@@ -76,7 +112,6 @@
   </div>
 
   <script>
-    // Liste de 11 livres (ajustez les chemins covers/coverX.jpg et audio/bookX.mp3)
     const books = [
       { cover: 'covers/cover1.jpg',  audio: 'audio/book1.mp3'  },
       { cover: 'covers/cover2.jpg',  audio: 'audio/book2.mp3'  },
@@ -91,9 +126,9 @@
       { cover: 'covers/cover11.jpg', audio: 'audio/book11.mp3' }
     ];
     let currentIndex = 0;
-
     const coverImg = document.getElementById('cover');
     const audioEl = document.getElementById('audio');
+    const visualizer = document.getElementById('visualizer');
     const prevBtn = document.getElementById('prev');
     const playBtn = document.getElementById('play');
     const stopBtn = document.getElementById('stop');
@@ -104,12 +139,11 @@
       const book = books[i];
       coverImg.src = book.cover;
       audioEl.src = book.audio;
+      visualizer.classList.remove('playing');
     }
 
-    // Initialisation
     loadBook(currentIndex);
 
-    // Gestion des événements
     prevBtn.addEventListener('click', () => {
       currentIndex = (currentIndex - 1 + books.length) % books.length;
       loadBook(currentIndex);
@@ -120,15 +154,22 @@
       loadBook(currentIndex);
       audioEl.pause();
     });
-    playBtn.addEventListener('click', () => audioEl.play());
+    playBtn.addEventListener('click', () => {
+      audioEl.play();
+    });
     stopBtn.addEventListener('click', () => {
       audioEl.pause();
       audioEl.currentTime = 0;
+      visualizer.classList.remove('playing');
     });
     fullBtn.addEventListener('click', () => {
       if (document.fullscreenElement) document.exitFullscreen();
       else document.documentElement.requestFullscreen();
     });
+    // Mettre à jour le visualizer lors de la lecture
+    audioEl.addEventListener('play', () => visualizer.classList.add('playing'));
+    audioEl.addEventListener('pause', () => visualizer.classList.remove('playing'));
+    audioEl.addEventListener('ended', () => visualizer.classList.remove('playing'));
   </script>
 </body>
 </html>
