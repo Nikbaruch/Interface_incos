@@ -21,7 +21,6 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       text-align: center;
       max-width: 320px;
-      position: relative;
     }
     #cover {
       width: 100%;
@@ -142,8 +141,10 @@
       visualizer.classList.remove('playing');
     }
 
+    // Initialisation
     loadBook(currentIndex);
 
+    // Navigation
     prevBtn.addEventListener('click', () => {
       currentIndex = (currentIndex - 1 + books.length) % books.length;
       loadBook(currentIndex);
@@ -154,20 +155,27 @@
       loadBook(currentIndex);
       audioEl.pause();
     });
+
+    // Play déclenche aussi l'animation
     playBtn.addEventListener('click', () => {
       audioEl.play();
+      visualizer.classList.add('playing');
     });
+
+    // Stop arrête lecture et animation
     stopBtn.addEventListener('click', () => {
       audioEl.pause();
       audioEl.currentTime = 0;
       visualizer.classList.remove('playing');
     });
+
+    // Plein écran
     fullBtn.addEventListener('click', () => {
       if (document.fullscreenElement) document.exitFullscreen();
       else document.documentElement.requestFullscreen();
     });
-    // Mettre à jour le visualizer lors de la lecture
-    audioEl.addEventListener('play', () => visualizer.classList.add('playing'));
+
+    // Synchronisation visuel/audio (optionnel)
     audioEl.addEventListener('pause', () => visualizer.classList.remove('playing'));
     audioEl.addEventListener('ended', () => visualizer.classList.remove('playing'));
   </script>
