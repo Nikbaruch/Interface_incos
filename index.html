@@ -30,6 +30,7 @@
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
+    /* Visualizer bars */
     #visualizer {
       display: none;
       margin: 18px auto 0;
@@ -51,7 +52,7 @@
     @keyframes bounce {
       0%,100%{transform:scaleY(0.3);}50%{transform:scaleY(1);}
     }
-    /* Contrôles fixes */
+    /* Contrôles fixes à l'intérieur du player */
     #controls {
       position: absolute;
       bottom: 24px;
@@ -60,11 +61,25 @@
       display: flex;
       gap: 18px;
     }
-    #fullscreen {
-      position: absolute;
+    /* Bouton plein écran fixé hors du player */
+    #fullscreen-button {
+      position: fixed;
       bottom: 24px;
       right: 24px;
+      width: 72px;
+      height: 72px;
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      background: #90a4ae;
+      transition: transform 0.1s ease;
+      z-index: 1000;
     }
+    #fullscreen-button:active { transform: scale(0.9); }
     .icon-button {
       width: 72px;
       height: 72px;
@@ -82,7 +97,6 @@
     #play { background: #8bc34a; }
     #pause { background: #ffc107; }
     #stop { background: #e91e63; }
-    #fullscreen-button { background: #90a4ae; }
     svg { width: 38px; height: 38px; fill: #ffffff; }
     #prev svg, #next svg { fill: #000000; width: 34px; height: 34px; }
   </style>
@@ -113,32 +127,71 @@
         <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
       </button>
     </div>
-    <button id="fullscreen-button" class="icon-button" title="Plein écran">
-      <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm0-4h2V7h3V5H7v5zm10 9h-3v2h5v-5h-2v3zm0-13v2h3v3h2V5h-5z"/></svg>
-    </button>
   </div>
+  <!-- Bouton Plein écran hors du player -->
+  <button id="fullscreen-button" class="icon-button" title="Plein écran">
+    <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm0-4h2V7h3V5H7v5zm10 9h-3v2h5v-5h-2v3zm0-13v2h3v3h2V5h-5z"/></svg>
+  </button>
   <script>
-    const books=[{cover:'covers/cover1.jpg',audio:'audio/book1.mp3'},{cover:'covers/cover2.jpg',audio:'audio/book2.mp3'},{cover:'covers/cover3.jpg',audio:'audio/book3.mp3'},{cover:'covers/cover4.jpg',audio:'audio/book4.mp3'},{cover:'covers/cover5.jpg',audio:'audio/book5.mp3'},{cover:'covers/cover6.jpg',audio:'audio/book6.mp3'},{cover:'covers/cover7.jpg',audio:'audio/book7.mp3'},{cover:'covers/cover8.jpg',audio:'audio/book8.mp3'},{cover:'covers/cover9.jpg',audio:'audio/book9.mp3'},{cover:'covers/cover10.jpg',audio:'audio/book10.mp3'},{cover:'covers/cover11.jpg',audio:'audio/book11.mp3'}];
-    let currentIndex=0;
-    const coverImg=document.getElementById('cover');
-    const audioEl=document.getElementById('audio');
-    const visualizer=document.getElementById('visualizer');
-    const prevBtn=document.getElementById('prev');
-    const playBtn=document.getElementById('play');
-    const pauseBtn=document.getElementById('pause');
-    const stopBtn=document.getElementById('stop');
-    const nextBtn=document.getElementById('next');
-    const fullBtn=document.getElementById('fullscreen-button');
-    function loadBook(i){const b=books[i];coverImg.src=b.cover;audioEl.src=b.audio;visualizer.classList.remove('playing');}
+    const books = [
+      { cover: 'covers/cover1.jpg',  audio: 'audio/book1.mp3'  },
+      { cover: 'covers/cover2.jpg',  audio: 'audio/book2.mp3'  },
+      { cover: 'covers/cover3.jpg',  audio: 'audio/book3.mp3'  },
+      { cover: 'covers/cover4.jpg',  audio: 'audio/book4.mp3'  },
+      { cover: 'covers/cover5.jpg',  audio: 'audio/book5.mp3'  },
+      { cover: 'covers/cover6.jpg',  audio: 'audio/book6.mp3'  },
+      { cover: 'covers/cover7.jpg',  audio: 'audio/book7.mp3'  },
+      { cover: 'covers/cover8.jpg',  audio: 'audio/book8.mp3'  },
+      { cover: 'covers/cover9.jpg',  audio: 'audio/book9.mp3'  },
+      { cover: 'covers/cover10.jpg', audio: 'audio/book10.mp3' },
+      { cover: 'covers/cover11.jpg', audio: 'audio/book11.mp3' }
+    ];
+    let currentIndex = 0;
+    const coverImg = document.getElementById('cover');
+    const audioEl = document.getElementById('audio');
+    const visualizer = document.getElementById('visualizer');
+    const prevBtn = document.getElementById('prev');
+    const playBtn = document.getElementById('play');
+    const pauseBtn = document.getElementById('pause');
+    const stopBtn = document.getElementById('stop');
+    const nextBtn = document.getElementById('next');
+    const fullBtn = document.getElementById('fullscreen-button');
+    function loadBook(i) {
+      const book = books[i];
+      coverImg.src = book.cover;
+      audioEl.src = book.audio;
+      visualizer.classList.remove('playing');
+    }
     loadBook(currentIndex);
-    prevBtn.onclick=()=>{currentIndex=(currentIndex-1+books.length)%books.length;loadBook(currentIndex);audioEl.pause();};
-    nextBtn.onclick=()=>{currentIndex=(currentIndex+1)%books.length;loadBook(currentIndex);audioEl.pause();};
-    playBtn.onclick=()=>{audioEl.play();visualizer.classList.add('playing');};
-    pauseBtn.onclick=()=>{audioEl.pause();visualizer.classList.remove('playing');};
-    stopBtn.onclick=()=>{audioEl.pause();audioEl.currentTime=0;visualizer.classList.remove('playing');};
-    fullBtn.onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen();};
-    audioEl.onpause=()=>visualizer.classList.remove('playing');
-    audioEl.onended=()=>visualizer.classList.remove('playing');
+    prevBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex - 1 + books.length) % books.length;
+      loadBook(currentIndex);
+      audioEl.pause();
+    });
+    nextBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % books.length;
+      loadBook(currentIndex);
+      audioEl.pause();
+    });
+    playBtn.addEventListener('click', () => {
+      audioEl.play();
+      visualizer.classList.add('playing');
+    });
+    pauseBtn.addEventListener('click', () => {
+      audioEl.pause();
+      visualizer.classList.remove('playing');
+    });
+    stopBtn.addEventListener('click', () => {
+      audioEl.pause();
+      audioEl.currentTime = 0;
+      visualizer.classList.remove('playing');
+    });
+    fullBtn.addEventListener('click', () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    });
+    audioEl.addEventListener('pause', () => visualizer.classList.remove('playing'));
+    audioEl.addEventListener('ended', () => visualizer.classList.remove('playing'));
   </script>
 </body>
 </html>
