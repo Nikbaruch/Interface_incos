@@ -13,16 +13,16 @@
       align-items: center;
       background-color: #fffde7;
       font-family: 'Arial', sans-serif;
-      /* Agrandir globalement de 20% */
-      font-size: 1.2rem;
+      font-size: 1.2rem; /* +20% */
     }
     #player {
       background: #ffffff;
-      padding: 24px 24px 100px; /* 20px→24px, espace bas pour boutons fixes */
+      padding: 24px;
+      padding-bottom: 100px;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       text-align: center;
-      max-width: 384px; /* 320px * 1.2 */
+      max-width: 384px;
       position: relative;
     }
     #cover {
@@ -30,19 +30,16 @@
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    /* Visualizer bars */
     #visualizer {
       display: none;
-      margin: 18px auto 0; /* 15px→18px */
-      height: 24px;        /* 20px→24px */
+      margin: 18px auto 0;
+      height: 24px;
       justify-content: center;
-      gap: 7px;            /* 6px→7px */
+      gap: 7px;
     }
-    #visualizer.playing {
-      display: flex;
-    }
+    #visualizer.playing { display: flex; }
     .bar {
-      width: 7px;         /* 6px→7px */
+      width: 7px;
       background: #90a4ae;
       animation: bounce 0.6s infinite ease-in-out;
       animation-delay: var(--delay);
@@ -52,21 +49,25 @@
     .bar:nth-child(2) { --delay: 0.2s; }
     .bar:nth-child(3) { --delay: 0.4s; }
     @keyframes bounce {
-      0%, 100% { transform: scaleY(0.3); }
-      50% { transform: scaleY(1); }
+      0%,100%{transform:scaleY(0.3);}50%{transform:scaleY(1);}
     }
     /* Contrôles fixes */
     #controls {
       position: absolute;
-      bottom: 24px;       /* 20px*1.2 */
+      bottom: 24px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
-      gap: 18px;          /* espace entre boutons 15px→18px */
+      gap: 18px;
+    }
+    #fullscreen {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
     }
     .icon-button {
-      width: 72px;        /* 60px→72px */
-      height: 72px;       /* 60px→72px */
+      width: 72px;
+      height: 72px;
       border: none;
       border-radius: 50%;
       display: flex;
@@ -77,16 +78,13 @@
       background: #ffffff;
       transition: transform 0.1s ease;
     }
-    .icon-button:active {
-      transform: scale(0.9);
-    }
-    /* Couleurs spécifiques */
+    .icon-button:active { transform: scale(0.9); }
     #play { background: #8bc34a; }
+    #pause { background: #ffc107; }
     #stop { background: #e91e63; }
-    #fullscreen { background: #90a4ae; }
-    /* Icônes agrandies de 20% */
-    svg { width: 38px; height: 38px; fill: #ffffff; }  /* 32px→38px */
-    #prev svg, #next svg { fill: #000000; width: 34px; height: 34px; } /* 28→34px */
+    #fullscreen-button { background: #90a4ae; }
+    svg { width: 38px; height: 38px; fill: #ffffff; }
+    #prev svg, #next svg { fill: #000000; width: 34px; height: 34px; }
   </style>
 </head>
 <body>
@@ -105,75 +103,42 @@
       <button id="play" class="icon-button" title="Play">
         <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
       </button>
+      <button id="pause" class="icon-button" title="Pause">
+        <svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+      </button>
       <button id="stop" class="icon-button" title="Stop">
         <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
-      </button>
-      <button id="fullscreen" class="icon-button" title="Plein écran">
-        <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm0-4h2V7h3V5H7v5zm10 9h-3v2h5v-5h-2v3zm0-13v2h3v3h2V5h-5z"/></svg>
       </button>
       <button id="next" class="icon-button" title="Suivant">
         <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
       </button>
     </div>
+    <button id="fullscreen-button" class="icon-button" title="Plein écran">
+      <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm0-4h2V7h3V5H7v5zm10 9h-3v2h5v-5h-2v3zm0-13v2h3v3h2V5h-5z"/></svg>
+    </button>
   </div>
   <script>
-    const books = [
-      { cover: 'covers/cover1.jpg',  audio: 'audio/book1.mp3'  },
-      { cover: 'covers/cover2.jpg',  audio: 'audio/book2.mp3'  },
-      { cover: 'covers/cover3.jpg',  audio: 'audio/book3.mp3'  },
-      { cover: 'covers/cover4.jpg',  audio: 'audio/book4.mp3'  },
-      { cover: 'covers/cover5.jpg',  audio: 'audio/book5.mp3'  },
-      { cover: 'covers/cover6.jpg',  audio: 'audio/book6.mp3'  },
-      { cover: 'covers/cover7.jpg',  audio: 'audio/book7.mp3'  },
-      { cover: 'covers/cover8.jpg',  audio: 'audio/book8.mp3'  },
-      { cover: 'covers/cover9.jpg',  audio: 'audio/book9.mp3'  },
-      { cover: 'covers/cover10.jpg', audio: 'audio/book10.mp3' },
-      { cover: 'covers/cover11.jpg', audio: 'audio/book11.mp3' }
-    ];
-    let currentIndex = 0;
-    const coverImg = document.getElementById('cover');
-    const audioEl = document.getElementById('audio');
-    const visualizer = document.getElementById('visualizer');
-    const prevBtn = document.getElementById('prev');
-    const playBtn = document.getElementById('play');
-    const stopBtn = document.getElementById('stop');
-    const fullBtn = document.getElementById('fullscreen');
-    const nextBtn = document.getElementById('next');
-
-    function loadBook(i) {
-      const book = books[i];
-      coverImg.src = book.cover;
-      audioEl.src = book.audio;
-      visualizer.classList.remove('playing');
-    }
-
+    const books=[{cover:'covers/cover1.jpg',audio:'audio/book1.mp3'},{cover:'covers/cover2.jpg',audio:'audio/book2.mp3'},{cover:'covers/cover3.jpg',audio:'audio/book3.mp3'},{cover:'covers/cover4.jpg',audio:'audio/book4.mp3'},{cover:'covers/cover5.jpg',audio:'audio/book5.mp3'},{cover:'covers/cover6.jpg',audio:'audio/book6.mp3'},{cover:'covers/cover7.jpg',audio:'audio/book7.mp3'},{cover:'covers/cover8.jpg',audio:'audio/book8.mp3'},{cover:'covers/cover9.jpg',audio:'audio/book9.mp3'},{cover:'covers/cover10.jpg',audio:'audio/book10.mp3'},{cover:'covers/cover11.jpg',audio:'audio/book11.mp3'}];
+    let currentIndex=0;
+    const coverImg=document.getElementById('cover');
+    const audioEl=document.getElementById('audio');
+    const visualizer=document.getElementById('visualizer');
+    const prevBtn=document.getElementById('prev');
+    const playBtn=document.getElementById('play');
+    const pauseBtn=document.getElementById('pause');
+    const stopBtn=document.getElementById('stop');
+    const nextBtn=document.getElementById('next');
+    const fullBtn=document.getElementById('fullscreen-button');
+    function loadBook(i){const b=books[i];coverImg.src=b.cover;audioEl.src=b.audio;visualizer.classList.remove('playing');}
     loadBook(currentIndex);
-
-    prevBtn.addEventListener('click', () => {
-      currentIndex = (currentIndex - 1 + books.length) % books.length;
-      loadBook(currentIndex);
-      audioEl.pause();
-    });
-    nextBtn.addEventListener('click', () => {
-      currentIndex = (currentIndex + 1) % books.length;
-      loadBook(currentIndex);
-      audioEl.pause();
-    });
-    playBtn.addEventListener('click', () => {
-      audioEl.play();
-      visualizer.classList.add('playing');
-    });
-    stopBtn.addEventListener('click', () => {
-      audioEl.pause();
-      audioEl.currentTime = 0;
-      visualizer.classList.remove('playing');
-    });
-    fullBtn.addEventListener('click', () => {
-      if (document.fullscreenElement) document.exitFullscreen();
-      else document.documentElement.requestFullscreen();
-    });
-    audioEl.addEventListener('pause', () => visualizer.classList.remove('playing'));
-    audioEl.addEventListener('ended', () => visualizer.classList.remove('playing'));
+    prevBtn.onclick=()=>{currentIndex=(currentIndex-1+books.length)%books.length;loadBook(currentIndex);audioEl.pause();};
+    nextBtn.onclick=()=>{currentIndex=(currentIndex+1)%books.length;loadBook(currentIndex);audioEl.pause();};
+    playBtn.onclick=()=>{audioEl.play();visualizer.classList.add('playing');};
+    pauseBtn.onclick=()=>{audioEl.pause();visualizer.classList.remove('playing');};
+    stopBtn.onclick=()=>{audioEl.pause();audioEl.currentTime=0;visualizer.classList.remove('playing');};
+    fullBtn.onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen();};
+    audioEl.onpause=()=>visualizer.classList.remove('playing');
+    audioEl.onended=()=>visualizer.classList.remove('playing');
   </script>
 </body>
 </html>
